@@ -1,118 +1,94 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import React, { useState } from "react"
+import toast from "react-hot-toast"
 
-const inter = Inter({ subsets: ['latin'] })
+import { WidgetForm } from "@/components/admin/WidgetForm"
+import { Metric } from "@/types/Widget"
 
-export default function Home() {
+const METRICS: Metric[] = [
+  { id: 31, code: "boa", name: "번아웃지수" },
+  { id: 30, code: "rel", name: "관계감" },
+  { id: 29, code: "com", name: "유능감" },
+  { id: 28, code: "auto", name: "자율감" },
+  { id: 27, code: "mlw", name: "일터의미" },
+  { id: 26, code: "wc", name: "일몰입" },
+  { id: 25, code: "oc", name: "조직몰입" },
+  { id: 24, code: "jobs", name: "직무만족감" },
+  { id: 23, code: "haw", name: "일터행복지수" },
+  { id: 22, code: "finwell", name: "경제적웰니스" },
+  { id: 21, code: "carwell", name: "커리어웰니스" },
+  { id: 20, code: "phywell", name: "신체적웰니스" },
+  { id: 19, code: "socwell", name: "사회적웰니스" },
+  { id: 18, code: "psywell", name: "심리적웰니스" },
+  { id: 17, code: "ope", name: "개방성" },
+  { id: 16, code: "neu", name: "신경증성향" },
+  { id: 15, code: "agr", name: "우호성" },
+  { id: 14, code: "con", name: "성실성" },
+  { id: 13, code: "ext", name: "외향성" },
+  { id: 12, code: "sts", name: "스트레스" },
+  { id: 11, code: "na", name: "부정정서" },
+  { id: 10, code: "pa", name: "긍정정서" },
+  { id: 9, code: "ml", name: "삶의의미" },
+  { id: 8, code: "ls", name: "삶의만족" },
+  { id: 7, code: "GLI", name: "개인행복지수" },
+  { id: 6, code: "raeds", name: "보상과 평가 불만족" },
+  { id: 5, code: "wload", name: "과도한 업무량" },
+  { id: 4, code: "int", name: "위축" },
+  { id: 3, code: "cyn", name: "냉소" },
+  { id: 2, code: "exh", name: "탈진" },
+]
+
+export default function GLL_Widget_NewPage() {
+  const [name, setName] = useState("")
+  const [type, setType] = useState<string | null>(null)
+  const [config, setConfig] = useState("{\n  \n}")
+  const [selectedMetrics, setSelectedMetrics] = useState<
+    Array<{ metric: Metric; order: number }>
+  >([])
+
+  const handleAddMetric = (selectedId: string) => {
+    const newMetric = METRICS.find((m) => m.id === parseInt(selectedId))
+    if (!newMetric) return
+
+    if (selectedMetrics.some((sm) => sm.metric.id === newMetric.id)) {
+      toast.error("이미 추가된 지표입니다.")
+      return
+    }
+
+    setSelectedMetrics([
+      ...selectedMetrics,
+      { metric: newMetric, order: selectedMetrics.length },
+    ])
+  }
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <section className="mt-8 pb-24">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <WidgetForm
+            name={name}
+            type={type}
+            selectedMetrics={selectedMetrics}
+            config={config}
+            availableMetrics={METRICS}
+            onNameChange={setName}
+            onTypeChange={setType}
+            onConfigChange={setConfig}
+            onAddMetric={handleAddMetric}
+            onRemoveMetric={(metricId) =>
+              setSelectedMetrics(
+                selectedMetrics.filter((sm) => sm.metric.id !== metricId),
+              )
+            }
+            onMetricOrderChange={(metricId, newOrder) =>
+              setSelectedMetrics(
+                selectedMetrics.map((sm) =>
+                  sm.metric.id === metricId ? { ...sm, order: newOrder } : sm,
+                ),
+              )
+            }
+          />
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </section>
   )
 }

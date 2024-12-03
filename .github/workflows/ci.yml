@@ -1,0 +1,59 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # To run Storybook you need to have Node.js 18 or higher
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Style Check with Stylelint
+        run: pnpm stylelint
+
+      - name: Check Format
+        run: pnpm check-format
+
+      - name: Run ESLint with Fix and Detect Changes
+        run: |
+          pnpm run lint:fix
+          git diff --exit-code || (
+            echo "⚠️ ESLint has automatically fixed some files. Please review the changes.";
+            exit 1;
+          )
+
+      - name: Type Check
+        run: pnpm type-check
+
+      - name: Run Tests
+        run: pnpm test
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Check Prisma Schema
+        run: pnpm prisma format --check
